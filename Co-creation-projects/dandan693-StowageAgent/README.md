@@ -1,6 +1,13 @@
 # 配载智能体 · StowageAgent
 
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+[![Tests](https://img.shields.io/badge/工具自检-15%2F15-success)](./outputs/评估报告.json)
+[![Eval](https://img.shields.io/badge/端到端评估-12%2F12-success)](./outputs/评估报告.json)
+[![框架](https://img.shields.io/badge/Agent框架-零依赖-orange)](#-技术栈)
+
 > 一个会查配载规则、会算贝位坐标的集装箱船配载助手 —— 同时是一份《Hello-Agents》的动手读书笔记。
+> **不依赖任何 Agent 框架，`pip install` 装 3 个包就能跑。**
 
 ---
 
@@ -25,23 +32,58 @@
 
 我是在读学生，正在学 AI 智能体开发，同时有集装箱配载的行业背景。
 《Hello-Agents》这本书 16 章讲了很多理论，但**光看书记不住**。
-所以我拿自己最熟的行业做靶子，把书里最核心的 6 章各拿一块出来，拼成一个能跑的东西：
+所以我拿自己最熟的行业做靶子，把书里最核心的 7 章各拿一块出来，拼成一个能跑的东西：
 
 | 书里的章节 | 在这个项目里变成了什么 |
 |---|---|
+| 第 1 章 初识智能体 | `src/agent.py` —— Agent 到底是什么 |
 | 第 3 章 大语言模型基础 | `src/llm.py` —— 怎么跟模型说话 |
+| 第 4 章 智能体经典范式 | `src/agent.py` —— ReAct 循环（手写，看得见思考过程） |
 | 第 7 章 构建你的智能体框架 | `src/tools.py` —— 工具系统（4 个真实业务工具） |
 | 第 8 章 记忆与检索 | `src/rag.py` + `src/memory.py` —— 翻资料 + 记得住 |
-| 第 1 章 初识智能体 / 第 4 章 经典范式 | `src/agent.py` —— ReAct 循环（手写，看得见思考过程） |
 | 第 9 章 上下文工程 | `src/context.py` —— 拼提示词、裁长度 |
 | 第 12 章 智能体性能评估 | `src/evaluate.py` —— 给自己的 Agent 打分 |
 
 > 这本书第 7 章就是教你自己动手造框架。所以本项目**故意不依赖任何 Agent 框架**，
 > 只用 `openai` 一个 SDK 手写。看懂这 7 个文件，再回头看书里的框架封装，一眼就明白它在封装什么。
 
+### 整体结构
+
+```mermaid
+flowchart TD
+    U([用户提问]) --> A[ReActAgent<br/>思考 → 行动 → 观察 循环]
+    A -->|决定用哪个工具| T{工具注册表<br/>ToolRegistry}
+    T --> T1[贝位计算器<br/>01+03 → 02]
+    T --> T2[坐标解析器<br/>010682 → 贝/排/层]
+    T --> T3[箱位校验器<br/>批量查错、去重]
+    T --> T4[知识库检索<br/>RAG：tfidf / vector]
+    T1 --> O[观察结果]
+    T2 --> O
+    T3 --> O
+    T4 --> O
+    O --> A
+    A -->|信息够了| F([最终答案<br/>资料里没有就直说])
+
+    M[Memory<br/>短期对话 + 长期笔记] -.-> A
+    C[ContextBuilder<br/>拼提示词、裁长度] -.-> A
+
+    subgraph 评估层
+        E1[工具自检 15 例<br/>离线·确定性]
+        E2[端到端评估 12 例<br/>联网·真实问答]
+    end
+
+    style A fill:#e8f0fe,stroke:#4285f4,color:#111
+    style F fill:#e6f4ea,stroke:#34a853,color:#111
+    style T fill:#fef7e0,stroke:#fbbc04,color:#111
+    style M fill:#fce8e6,stroke:#ea4335,color:#111
+    style C fill:#fce8e6,stroke:#ea4335,color:#111
+    style E1 fill:#f1f3f4,stroke:#9aa0a6,color:#111
+    style E2 fill:#f1f3f4,stroke:#9aa0a6,color:#111
+```
+
 ### 适用场景
 
-- 想学 Agent 开发但被框架绕晕的人 —— 这个项目的 ReAct 循环只有 100 行，全部能读懂
+- 想学 Agent 开发但被框架绕晕的人 —— 这个项目的 ReAct 循环不依赖任何框架，`src/agent.py` 全部 208 行，能一行不跳地读完
 - 想做「文档问答」类应用的人 —— RAG 的四步拆成了四个方法，一步一步看
 - 集装箱配载 / 货运相关从业者 —— 知识库里的规则是真的，可以直接拿去用
 - **想给 Agent 写测试的人** —— 项目里有两层评估：工具层单元测试 + 端到端准确率
@@ -57,6 +99,33 @@
 - [x] **ReAct 循环** —— 自己决定该用哪个工具、该不该查资料，最多循环 5 轮
 - [x] **两层评估** —— 工具层（离线、免费、结果确定）+ 端到端（联网、测真实问答能力）
 - [x] **不会瞎编** —— 资料里没有的问题，它会回答"没有提到"（项目里有专门的测试用例测这一点）
+
+---
+
+## 📁 项目结构
+
+```
+dandan693-StowageAgent/
+├── main.py                  # 命令行入口：tools / ask / chat / eval
+├── main.ipynb               # 教学版 Notebook：22 格，按章节顺序点下来就跑完
+├── requirements.txt
+├── .env.example             # 复制成 .env 再填密钥
+├── LICENSE                  # MIT
+├── src/                     # ← 书的章节落在这里
+│   ├── llm.py               # 第 3 章  跟大模型说话
+│   ├── tools.py             # 第 7 章  4 个业务工具 + 工具注册表
+│   ├── rag.py               # 第 8 章  知识库检索（tfidf / vector 双模式）
+│   ├── memory.py            # 第 8 章  短期对话记忆 + 长期笔记
+│   ├── context.py           # 第 9 章  拼提示词、裁上下文长度
+│   ├── agent.py             # 第 1/4 章 手写 ReAct 循环
+│   └── evaluate.py          # 第 12 章 两层评估
+├── data/
+│   ├── 配载知识库.txt        # 21 段真实配载规则（RAG 的"资料"）
+│   └── 测试用例.json         # 15 条工具自检 + 12 条端到端用例
+└── outputs/
+    ├── 评估报告.json         # 评估结果（跟仓库一起提交，作为证据）
+    └── 长期笔记.md           # Agent 运行中自己记的笔记
+```
 
 ---
 
@@ -213,10 +282,10 @@ NE 040406
 ## 🎯 项目亮点
 
 **1. 章节和文件一一对应，看书能对上代码**
-`src/` 下 7 个文件就是 6 个章节的落地，README 里有对照表。不用在几千行代码里找"书里那个概念在哪"。
+`src/` 下 7 个模块就是 7 个章节的落地，README 里有对照表。不用在几千行代码里找"书里那个概念在哪"。
 
 **2. 完全手写 ReAct，没有框架黑盒**
-`src/agent.py` 里的循环只有 100 行，Thought / Action / Observation 全都打印出来给你看。
+`src/agent.py` 一共 208 行，其中真正驱动循环的不到 50 行，Thought / Action / Observation 全都打印出来给你看。
 看懂这个，再看书里第 7 章的框架封装就不迷糊了。
 
 **3. 知识库是真实业务规则，不是"张三李四"的假数据**
@@ -396,7 +465,10 @@ def _normalize(text): return re.sub(r"\s+", "", text)
 
 ## 📄 许可证
 
-MIT License
+本项目采用 [MIT License](./LICENSE)，可自由使用、修改、分发。
+
+> `data/配载知识库.txt` 里的配载规则来自个人作业经验总结，仅供参考学习；
+> 实际配载作业请以船公司/码头的正式规范为准。
 
 ## 👤 作者
 

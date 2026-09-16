@@ -18,12 +18,24 @@ from __future__ import annotations
 
 import os
 import time
+from pathlib import Path
 from typing import Dict, Iterator, List
 
 from dotenv import load_dotenv
 
-# 读取项目根目录的 .env，把里面的 key 变成环境变量
-load_dotenv()
+# ----------------------------------------------------------------------
+# 读取 .env 的位置
+#   1) 优先读本项目根目录的 .env（下完代码复制 .env.example 就在这里）
+#   2) 本项目目录没有，再按 dotenv 默认行为从当前目录逐级往上找
+# 先找到先算数，已经存在的环境变量不会被覆盖。
+# ----------------------------------------------------------------------
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_ENV_FILE = PROJECT_ROOT / ".env"
+
+if _ENV_FILE.exists():
+    load_dotenv(_ENV_FILE)
+else:
+    load_dotenv()
 
 
 class LLMError(RuntimeError):
@@ -66,7 +78,8 @@ class LLM:
         if missing:
             raise LLMError(
                 "缺少配置：" + "、".join(missing) + "\n"
-                "请把 .env.example 复制成 .env，然后填上你自己的模型信息。"
+                "请把 .env.example 复制成 .env（放在这里即可："
+                f"{PROJECT_ROOT}），然后填上你自己的模型信息。"
             )
 
         try:
