@@ -49,7 +49,7 @@ NOTE_FILE = ROOT / "outputs" / "长期笔记.md"
 
 # ======================================================================
 def build_registry(mode: str = "tfidf") -> ToolRegistry:
-    """装好 4 个工具。这一步对应第 7 章的"工具系统"。"""
+    """装好 4 个工具（工具系统）。"""
     print(f"⏳ 正在加载知识库并建索引（模式：{mode}）…")
     retriever = Retriever(KB_FILE, mode=mode)
     retriever.index()
@@ -150,7 +150,7 @@ def cmd_chat(args) -> None:
 
 
 # ======================================================================
-# 命令四：评估（第 12 章）
+# 命令四：评估
 # ======================================================================
 def cmd_eval(args) -> None:
     report = {}
@@ -183,7 +183,7 @@ def cmd_eval(args) -> None:
 # ======================================================================
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="配载智能体 —— 一个用来学习《Hello-Agents》的最小可用项目",
+        description="配载智能体 —— 集装箱船配载规则问答与坐标计算",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

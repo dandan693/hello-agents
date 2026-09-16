@@ -1,14 +1,14 @@
 """配载智能体的核心模块。
 
-模块与《Hello-Agents》章节的对应关系：
+各模块职责：
 
-    llm.py       第 3 章   大语言模型基础（怎么跟模型说话）
-    tools.py     第 7 章   工具系统（给智能体装上"手"）
-    memory.py    第 8 章   记忆系统（短期对话 + 长期笔记）
-    rag.py       第 8 章   检索增强（让模型能"翻资料"）
-    context.py   第 9 章   上下文工程（拼提示词、裁长度）
-    agent.py     第 1/4 章 ReAct 循环（想一步、做一步）
-    evaluate.py  第 12 章  性能评估（给 Agent 打分）
+    llm.py       大语言模型基础（怎么跟模型说话）
+    tools.py     工具系统（给智能体装上"手"）
+    memory.py    记忆系统（短期对话 + 长期笔记）
+    rag.py       检索增强（让模型能"翻资料"）
+    context.py   上下文工程（拼提示词、裁长度）
+    agent.py     ReAct 循环（想一步、做一步）
+    evaluate.py  性能评估（给 Agent 打分）
 """
 
 from .agent import ReActAgent

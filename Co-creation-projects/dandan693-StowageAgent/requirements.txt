@@ -8,6 +8,3 @@ numpy>=1.24.0
 # 只有用 `--mode vector` 时才需要。它会额外下载约 400MB 的中文向量模型，
 # 第一次跑建议先用默认的 tfidf 模式，跑通流程再说。
 # sentence-transformers>=3.0.0
-
-# ===== 可选：如果你想把《Hello-Agents》框架本身也装上一块玩 =====
-# hello-agents[all]==0.2.0
